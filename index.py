@@ -1,5 +1,6 @@
 from tkinter import *
 from timer import Timer
+from figure import gen_rand_figure_constructor, NEXT_FIGURE_RECT_SIZE
 
 SIZE = 30
 WIDTH = 10
@@ -12,13 +13,14 @@ CANVAS_HEIGHT = SIZE * HEIGHT + 1
 SIDE_PANEL_WIDTH = 200
 SIDE_PANEL_HEIGHT = CANVAS_HEIGHT
 
-NEXT_FIGURE_RECT_SIZE = 20
-
 NEXT_FIGURE_CANVAS_WIDTH = NEXT_FIGURE_RECT_SIZE * 4 + 11
 NEXT_FIGURE_CANVAS_HEIGHT = NEXT_FIGURE_RECT_SIZE * 4 + 11
 
 CONTAINER_WIDTH = CANVAS_WIDTH + 6 + SIDE_PANEL_WIDTH
 CONTAINER_HEIGHT = CANVAS_HEIGHT + 6
+
+LEVEL_1_INTERVAL = 1
+SPEED_INCREASE_COEFF = 0.9
 
 
 class Tetris(Frame):
@@ -36,7 +38,7 @@ class Tetris(Frame):
         self.start_game()
 
     def create_field(self):
-        canvas = Canvas(
+        canvas = self.field_canvas = Canvas(
             self,
             bd=0,
             width=CANVAS_WIDTH,
@@ -133,14 +135,14 @@ class Tetris(Frame):
             column=0
         )
 
-        self.next_figure = Canvas(
+        self.next_figure_canvas = Canvas(
             next_figure_frame,
             bd=0,
             width=NEXT_FIGURE_CANVAS_WIDTH,
             height=NEXT_FIGURE_CANVAS_HEIGHT,
-            bg='#ececec'
+            bg='#eee'
         )
-        self.next_figure.grid(
+        self.next_figure_canvas.grid(
             row=4,
             column=0
         )
@@ -148,11 +150,29 @@ class Tetris(Frame):
     def on_quit(self):
         print('quitting')
         root.destroy()
-        self.timer.cancel()
+        # self.timer.cancel()
 
     def start_game(self):
-        print(1)
-        self.timer = Timer(1, self.start_game)
+        self.set_interval(LEVEL_1_INTERVAL)
+        self.set_score(0)
+        self.generate_figure()
+        self.insert_figure()
+
+    def set_interval(self, interval):
+        self.interval = interval
+
+    def set_score(self, score):
+        self.score = score
+        self.points.set(score)
+
+    def generate_figure(self):
+        self.next_figure = gen_rand_figure_constructor()(
+            side_canvas=self.next_figure_canvas,
+            canvas=self.field_canvas
+        )
+
+    def insert_figure(self):
+        self.next_figure.insert()
 
 
 root = Tk()
